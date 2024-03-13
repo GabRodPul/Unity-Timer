@@ -6,29 +6,36 @@ namespace GRP.Unity
 {
     public class Timer : MonoBehaviour
     {
-        enum Count { Down = -1, Up = 1 }
+        public enum Count { Down = -1, Up = 1 }
 
-        [SerializeField] Count _count = Count.Up;
+        public Count CountMode = Count.Up;
         [SerializeField, Min(0)] float _startSecs = 0f;
-        [SerializeField] bool _playOnStart = true;
+        public bool PlayOnStart    = true;
+        public bool PauseOnDisable = false;
+        public bool ResumeOnEnable = false;
 
-        public float Secs      { get; private set; } = 0f;
-        public bool  IsRunning { get; private set; } 
+        [HideInInspector] public float Secs      { get; private set; } = 0f;
+        [HideInInspector] public bool  IsRunning { get; private set; } 
 
         void Start()
         {
             Secs      = _startSecs;
-            IsRunning = _playOnStart;
+            IsRunning = PlayOnStart;
         }
 
         void Update()
         {
             if (IsRunning) 
-                Secs += Time.deltaTime * (float)_count;
+                Secs += Time.deltaTime * (float)CountMode;
         }
 
-        public void Play() => IsRunning = true;
-        public void Stop() => IsRunning = false;
+        public void Resume() => IsRunning = true;
+        public void Pause()  => IsRunning = false;
+        void OnDisable() => IsRunning = !PauseOnDisable || IsRunning;
+        void OnEnable()  => IsRunning =  ResumeOnEnable || IsRunning;
+
+        public void ResetToZero()  => Secs = 0;
+        public void ResetToStart() => Secs = _startSecs;
 
         public string FmtMinutes()
             => $"{Mathf.FloorToInt(Secs / 60):00}:{Mathf.FloorToInt(Secs % 60):00}";
